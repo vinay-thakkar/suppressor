@@ -1,0 +1,26 @@
+{
+  "namespace": "com.vins.example.kstream.suppressor",
+  "type": "record",
+  "name": "GroupedRequestResponse",
+  "fields": [
+    {
+      "name": "count",
+      "type": "long"
+    },
+    {
+      "name": "duration",
+      "type": "long"
+    },
+    {
+      "name": "messages",
+      "type": [
+        "null",
+        {
+          "type": "array",
+          "items": "RequestResponse"
+        }
+      ],
+      "default": null
+    }
+  ]
+}

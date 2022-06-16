@@ -1,0 +1,119 @@
+spring.cloud:
+  stream:
+    function:
+      definition: dataGenerator;requestProcessor;responseProcessor;dataVerifier;tryingSuppress
+    bindings:
+      # 1. Supplier function acting as Kafka Producer, bound by KAFKA-BINDER
+      dataGenerator-out-0:
+        destination: com.vins.example.kstream.suppressor.input
+        producer:
+          useNativeEncoding: true
+      # 2. Processor function acting as Kafka Stream Consumer and Producer, bound by KAFKA-STREAMS-BINDER
+      requestProcessor-in-0:
+        destination: com.vins.example.kstream.suppressor.input
+        consumer:
+          use-native-decoding: true
+      requestProcessor-out-0:
+        destination: com.vins.example.kstream.suppressor.output
+        producer:
+          use-native-encoding: true
+      responseProcessor-in-0:
+        destination: com.vins.example.kstream.suppressor.input
+        consumer:
+          use-native-decoding: true
+      responseProcessor-out-0:
+        destination: com.vins.example.kstream.suppressor.output
+        producer:
+          use-native-encoding: true
+      # 3. Consumer function acting as Kafka Stream Consumer, bound by KAFKA-STREAMS-BINDER
+      dataVerifier-in-0:
+        destination: com.vins.example.kstream.suppressor.output
+        consumer:
+          use-native-decoding: true
+      # 3. Consumer function acting as Kafka Stream Consumer, bound by KAFKA-STREAMS-BINDER
+      tryingSuppress-in-0:
+        destination: com.vins.example.kstream.suppressor.output
+        consumer:
+          use-native-decoding: true
+      tryingSuppress-out-0:
+        destination: com.vins.example.kstream.suppressor.missing
+        producer:
+          use-native-encoding: true
+    # KAFKA-BINDER configuration applicable to the data-generator function
+    kafka:
+      binder:
+        brokers: ${KAFKA_BROKERS_URL:http://localhost:9092}
+        configuration:
+          security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
+        producerProperties:
+          key.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+          value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      bindings:
+        dataGenerator-out-0:
+          producer:
+            configuration:
+              key.serializer: org.apache.kafka.common.serialization.StringSerializer
+              value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+              schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+    # KAFKA-STREAMS-BINDER configuration applicable to all other KStream functions/consumers except dataGenerator
+      streams:
+        binder:
+          functions:
+            tryingSuppress:
+              applicationId: SuppressorApp
+          brokers: ${KAFKA_BROKERS_URL:http://localhost:9092}
+          configuration:
+            schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+            security.protocol: ${SECURITY_PROTOCOL:PLAINTEXT}
+            default:
+              key.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              value.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+        bindings:
+          requestProcessor-in-0:
+            consumer:
+              keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              enableDlq: true
+              dlqName: com.vins.example.kstream.suppressor.dlq.input.requestProcessor
+              dlqPartitions: 1
+              autoCommitOnError: true
+          requestProcessor-out-0:
+            producer:
+              keySerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+          responseProcessor-in-0:
+            consumer:
+              keySerde: org.apache.kafka.common.serialization.Serdes$StringSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              enableDlq: true
+              dlqName: com.vins.example.kstream.suppressor.dlq.input.responseProcessor
+              dlqPartitions: 1
+              autoCommitOnError: true
+          responseProcessor-out-0:
+            producer:
+              keySerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+          dataVerifier-in-0:
+            consumer:
+              keySerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              enableDlq: true
+              dlqName: com.vins.example.kstream.suppressor.dlq.output.dataVerifier
+              dlqPartitions: 1
+              autoCommitOnError: true
+          tryingSuppress-in-0:
+            consumer:
+              keySerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              enableDlq: true
+              dlqName: com.vins.example.kstream.suppressor.dlq.output.tryingSuppress
+              dlqPartitions: 1
+              autoCommitOnError: true
+          tryingSuppress-out-0:
+            producer:
+              keySerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+              valueSerde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+    poller:
+      initialDelay: 5000
+      fixedDelay: 1000
+

@@ -1,0 +1,63 @@
+{
+  "namespace": "com.vins.example.kstream.suppressor",
+  "type": "record",
+  "name": "RequestResponse",
+  "fields": [
+    {
+      "name": "requestId",
+      "type": "string"
+    },
+    {
+      "name": "responseId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "messageType",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "MessageType",
+          "symbols": [
+            "REQUEST",
+            "RESPONSE"
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "requestTime",
+      "type": "long",
+      "logicalType": "local-timestamp-millis"
+    },
+    {
+      "name": "responseTime",
+      "type": [
+        "null",
+        "long"
+      ],
+      "logicalType": "local-timestamp-millis",
+      "default": null
+    },
+    {
+      "name": "temperature",
+      "type": "float",
+      "default": 0.0
+    },
+    {
+      "name": "acceleration",
+      "type": "float",
+      "default": 0.0
+    },
+    {
+      "name": "velocity",
+      "type": "float",
+      "default": 0.0
+    }
+  ]
+}

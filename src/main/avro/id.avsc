@@ -1,0 +1,8 @@
+{
+  "namespace" : "com.vins.example.kstream.suppressor",
+  "type" : "record",
+  "name" : "DataKey",
+  "fields" : [
+    {"name":"requestId", "type":"string"}
+  ]
+}

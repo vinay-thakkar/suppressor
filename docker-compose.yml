@@ -2,6 +2,7 @@ version: "3.3"
 services:
   broker:
     image: vinaythakkar/cp-kafka:7.0.0-ubi8
+#    image: confluentinc/cp-server:7.0.1
     hostname: broker
     container_name: broker
     depends_on:
@@ -25,6 +26,7 @@ services:
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
   zookeeper:
     image: vinaythakkar/cp-zookeeper:7.0.0-ubi8
+#    image: confluentinc/cp-zookeeper:7.0.1
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -35,6 +37,7 @@ services:
       ZOOKEEPER_SERVERS: zookeeper:2888:3888
   schema-registry:
     image: vinaythakkar/cp-schema-registry:7.0.0-ubi8
+#    image: confluentinc/cp-schema-registry:7.0.1
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -48,33 +51,5 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
-  connect:
-    build:
-      context: .
-      dockerfile: ./connect/Dockerfile.arm
-    hostname: connect
-    container_name: connect
-    depends_on:
-      - broker
-      - schema-registry
-    ports:
-      - "8083:8083"
-    environment:
-      CONNECT_GROUP_ID: 'rcalc_connect'
-      CONNECT_CONFIG_STORAGE_TOPIC: "rcalc_connect_config"
-      CONNECT_OFFSET_STORAGE_TOPIC: "rcalc_connect_offsets"
-      CONNECT_STATUS_STORAGE_TOPIC: "rcalc_connect_status"
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_BOOTSTRAP_SERVERS: 'broker:29092'
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect
-      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
-      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
-      CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
-      CONNECT_LISTENERS: http://0.0.0.0:8083
-      CONNECT_LOG4J_ROOT_LOGLEVEL: DEBUG
 
 

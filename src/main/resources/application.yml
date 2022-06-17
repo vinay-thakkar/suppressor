@@ -117,3 +117,8 @@ spring.cloud:
       initialDelay: 5000
       fixedDelay: 1000
 
+logging:
+  level:
+    root: ${LOG_LEVEL:ERROR}
+    com.vins: DEBUG
+    org.apache.kafka.streams: ${LOG_LEVEL:ERROR}
